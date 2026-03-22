@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "id": "1774195881280",
+      "email": "user@gmail.com",
+      "password": "$2b$10$.Fo3ofWDc1eESLcxB97KE.4tSf6JeV0KBHAWeV3dVscG/4ogbZ.92",
+      "fullName": "Phạm Công Thành",
+      "role": "user",
+      "createdAt": "2026-03-22T16:11:21.280Z"
+    }
+  ]
+}
