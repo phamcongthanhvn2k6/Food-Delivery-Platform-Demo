@@ -3,10 +3,18 @@
     {
       "id": "1774195881280",
       "email": "user@gmail.com",
-      "password": "$2b$10$.Fo3ofWDc1eESLcxB97KE.4tSf6JeV0KBHAWeV3dVscG/4ogbZ.92",
+      "password": "$2b$10$r7ijkBcH4rTFiV/nGTgsU.Ujg1xZGaTx7rwVhZgObh7iMi0RIDaLu",
       "fullName": "Phạm Công Thành",
       "role": "user",
       "createdAt": "2026-03-22T16:11:21.280Z"
+    },
+    {
+      "id": "1774251352811",
+      "email": "phamcongt56@gmail.com",
+      "password": "$2b$10$TWAnKJHq6ez61rL/6NoEmuiUDXTub0zSjuLnnl/xzTYKnMc7iM6zK",
+      "fullName": "Phạm Công Thành",
+      "role": "user",
+      "createdAt": "2026-03-23T07:35:52.811Z"
     }
   ]
 }

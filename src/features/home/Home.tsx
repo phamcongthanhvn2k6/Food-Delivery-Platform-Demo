@@ -1,57 +1,11 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { logout } from '../../store/authSlice';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 
 export default function Home() {
-  const { user } = useSelector(state => state.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-12">
-          <h1 className="text-[#0052cc] font-extrabold text-xl tracking-tight">Culinary Flow</h1>
-          <nav className="hidden md:flex gap-8">
-            <a href="#" className="text-[#0052cc] font-bold border-b-2 border-[#0052cc] pb-1">Browse</a>
-            <a href="#" className="text-gray-500 font-semibold hover:text-gray-900 transition">Offers</a>
-            <a href="#" className="text-gray-500 font-semibold hover:text-gray-900 transition">Orders</a>
-          </nav>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <button className="text-gray-500 hover:text-gray-900 relative">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-          </button>
-          
-          <div className="flex items-center gap-3 relative group">
-             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#0052cc] font-bold overflow-hidden cursor-pointer shadow-sm border border-blue-200">
-               {user?.fullName?.charAt(0) || 'U'}
-             </div>
-             
-             {/* Dropdown menu */}
-             <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all">
-                <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                  <p className="text-sm font-bold text-gray-900 truncate">{user?.fullName}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.role}</p>
-                </div>
-                <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50">Log out</button>
-             </div>
-          </div>
-          
-          <button className="bg-[#0052cc] text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition hover:-translate-y-0.5">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            Cart
-          </button>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
@@ -216,62 +170,7 @@ export default function Home() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 mt-12 py-12">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
-            <h4 className="font-extrabold text-gray-900 mb-4">Company</h4>
-            <ul className="space-y-3 text-sm font-medium text-gray-500">
-              <li><a href="#" className="hover:text-gray-900 transition">About Us</a></li>
-              <li><a href="#" className="hover:text-gray-900 transition">Careers</a></li>
-              <li><a href="#" className="hover:text-gray-900 transition">Blog</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-extrabold text-gray-900 mb-4">Support</h4>
-            <ul className="space-y-3 text-sm font-medium text-gray-500">
-              <li><a href="#" className="hover:text-gray-900 transition">Help Center</a></li>
-              <li><a href="#" className="hover:text-gray-900 transition">Partner with Us</a></li>
-              <li><a href="#" className="hover:text-gray-900 transition">Deliver with Us</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-extrabold text-gray-900 mb-4">Legal</h4>
-            <ul className="space-y-3 text-sm font-medium text-gray-500">
-              <li><a href="#" className="hover:text-gray-900 transition">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-gray-900 transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-gray-900 transition">Cookie Policy</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-extrabold text-gray-900 mb-4">Install App</h4>
-            <div className="space-y-3">
-              <button className="w-full bg-gray-900 text-white rounded-xl py-2 px-4 flex items-center gap-3 hover:bg-black transition">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.74 3.58-.76 1.54-.05 2.81.65 3.54 1.76-3.1 1.83-2.6 5.92.4 7.06-.7 1.75-1.57 3.36-2.6 4.11zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-                <div className="text-left">
-                  <div className="text-[10px] text-gray-300 font-bold uppercase tracking-wider">Download on the</div>
-                  <div className="text-sm font-extrabold leading-tight">App Store</div>
-                </div>
-              </button>
-              <button className="w-full bg-gray-900 text-white rounded-xl py-2 px-4 flex items-center gap-3 hover:bg-black transition">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a1.986 1.986 0 01-.634-1.356V3.17c0-.528.214-1.056.633-1.356zm10.941 11.235l2.254 2.254-10.45 6.012 8.196-8.266zm.83-1.018l2.677-2.677a2 2 0 010 2.828l-2.677-2.677-2.607-2.607a2 2 0 010 2.828l2.607 2.607zm-1.03-3.041L6.155 3.54l10.449 6.012-2.254 2.254-8.196-8.266z"/></svg>
-                <div className="text-left">
-                  <div className="text-[10px] text-gray-300 font-bold uppercase tracking-wider">Get it on</div>
-                  <div className="text-sm font-extrabold leading-tight">Google Play</div>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 font-medium">
-          <p>© 2024 Culinary Flow. Kinetic Concierge Service.</p>
-          <div className="flex gap-4 mt-4 md:mt-0">
-            <a href="#" className="hover:text-gray-600 transition">Privacy</a>
-            <a href="#" className="hover:text-gray-600 transition">Terms</a>
-            <a href="#" className="hover:text-gray-600 transition">Accessibility</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
