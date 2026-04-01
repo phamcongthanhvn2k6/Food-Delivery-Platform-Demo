@@ -4,6 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
 const app = express();
@@ -12,6 +15,23 @@ app.use(express.json());
 
 const DB_PATH = path.join(__dirname, '../db.json');
 const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key_here';
+
+// Cấu hình Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'food-delivery', // Tên folder trên cloudinary 
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // Read DB helper
 const readDB = () => {
@@ -108,6 +128,17 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Đã xảy ra lỗi server', error: error.message });
     }
+});
+
+app.post('/api/upload', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'Không thể tải ảnh lên hoặc chưa chọn ảnh' });
+    }
+    
+    res.json({
+        message: 'Tải ảnh lên thành công',
+        imageUrl: req.file.path // URL ảnh trả về từ Cloudinary
+    });
 });
 
 const PORT = process.env.PORT || 5000;

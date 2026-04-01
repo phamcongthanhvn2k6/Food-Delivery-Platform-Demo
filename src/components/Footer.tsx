@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100 mt-12 py-12">
@@ -12,9 +14,9 @@ export default function Footer() {
         <div>
           <h4 className="font-extrabold text-gray-900 mb-4">Company</h4>
           <ul className="space-y-3 text-sm font-medium text-gray-500">
-            <li><a href="#" className="hover:text-gray-900 transition">About Us</a></li>
-            <li><a href="#" className="hover:text-gray-900 transition">Help Center</a></li>
-            <li><a href="#" className="hover:text-gray-900 transition">Privacy Policy</a></li>
+            <li><Link to="/about" className="hover:text-gray-900 transition">About Us</Link></li>
+            <li><Link to="/support" className="hover:text-gray-900 transition">Help Center</Link></li>
+            <li><Link to="/privacy" className="hover:text-gray-900 transition">Privacy Policy</Link></li>
             <li><a href="#" className="hover:text-gray-900 transition">Terms of Service</a></li>
           </ul>
         </div>
@@ -22,8 +24,8 @@ export default function Footer() {
         <div>
           <h4 className="font-extrabold text-gray-900 mb-4">Partner</h4>
           <ul className="space-y-3 text-sm font-medium text-gray-500">
-            <li><a href="#" className="hover:text-gray-900 transition">Add your restaurant</a></li>
-            <li><a href="#" className="hover:text-gray-900 transition">Sign up to deliver</a></li>
+            <li><Link to="/partner" className="hover:text-gray-900 transition">Add your restaurant</Link></li>
+            <li><Link to="/partner" className="hover:text-gray-900 transition">Sign up to deliver</Link></li>
           </ul>
         </div>
         

@@ -1,11 +1,12 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { logout } from '../store/authSlice';
 
 export default function Header() {
   const { user } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     dispatch(logout());
@@ -17,9 +18,9 @@ export default function Header() {
       <div className="flex items-center gap-12">
         <Link to="/" className="text-[#0052cc] font-extrabold text-xl tracking-tight">Culinary Flow</Link>
         <nav className="hidden md:flex gap-8">
-          <Link to="/" className="text-[#0052cc] font-bold border-b-2 border-[#0052cc] pb-1">Browse</Link>
-          <Link to="/orders" className="text-gray-500 font-semibold hover:text-gray-900 transition">Orders</Link>
-          <Link to="/offers" className="text-gray-500 font-semibold hover:text-gray-900 transition">Offers</Link>
+          <Link to="/" className={`${location.pathname === '/' ? 'text-[#0052cc] border-b-2 border-[#0052cc] pb-1 font-bold' : 'text-gray-500 font-semibold hover:text-gray-900 transition'}`}>Browse</Link>
+          <Link to="/orders" className={`${location.pathname.startsWith('/orders') ? 'text-[#0052cc] border-b-2 border-[#0052cc] pb-1 font-bold' : 'text-gray-500 font-semibold hover:text-gray-900 transition'}`}>Orders</Link>
+          <Link to="/offers" className={`${location.pathname.startsWith('/offers') ? 'text-[#0052cc] border-b-2 border-[#0052cc] pb-1 font-bold' : 'text-gray-500 font-semibold hover:text-gray-900 transition'}`}>Offers</Link>
         </nav>
       </div>
       
@@ -53,6 +54,7 @@ export default function Header() {
                 <p className="text-sm font-bold text-gray-900 truncate">{user?.fullName || 'Guest'}</p>
                 <p className="text-xs text-gray-500 truncate">{user?.role || 'User'}</p>
               </div>
+              <Link to="/account" className="block w-full text-left px-4 py-2 text-sm text-gray-700 font-bold hover:bg-gray-50">Account</Link>
               <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50">Log out</button>
            </div>
         </div>

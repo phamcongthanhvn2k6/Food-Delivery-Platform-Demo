@@ -1,7 +1,49 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 
+interface Category {
+  id: string;
+  name: string;
+  type: string;
+  icon?: string;
+  imageUrl?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  rating: number;
+}
+
 export default function Home() {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  
+  useEffect(() => {
+    // Fetch categories
+    fetch('http://localhost:3000/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data.slice(0, 12))) // display up to 12 categories
+      .catch(err => console.error(err));
+
+    // Fetch popular products (we will just take top rated or random ones)
+    fetch('http://localhost:3000/products')
+      .then(res => res.json())
+      .then((data: Product[]) => {
+        // Sort by rating or shuffle, here we sort by rating and take top 6
+        const sorted = data.sort((a, b) => b.rating - a.rating);
+        setPopularProducts(sorted.slice(0, 6));
+      })
+      .catch(err => console.error(err));
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -54,12 +96,31 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {['Pizza', 'Sushi', 'Burgers', 'Desserts', 'Beverages', 'Healthy'].map((cat, i) => (
-              <div key={i} className="bg-white p-4 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition border border-gray-100 shadow-sm group">
-                <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-blue-50 transition text-[#0052cc]">
-                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 14H7v-2h2v2zm0-4H7V7h2v3zm4 4h-2v-2h2v2zm0-4h-2V7h2v3z"></path></svg>
+            {categories.length > 0 ? categories.map((cat) => (
+              <div 
+                key={cat.id} 
+                onClick={() => navigate(`/category/${encodeURIComponent(cat.name)}`)}
+                className="bg-white p-4 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition border border-gray-100 shadow-sm group"
+              >
+                <div className="w-14 h-14 bg-gray-50 rounded-full overflow-hidden flex items-center justify-center group-hover:bg-blue-50 transition text-[#0052cc]">
+                   {cat.imageUrl ? (
+                     <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
+                   ) : cat.icon ? (
+                     <i className={`${cat.icon} text-xl`}></i>
+                   ) : cat.type === 'food' ? (
+                     <span className="text-2xl">🍽️</span>
+                   ) : (
+                     <span className="text-2xl">🥤</span>
+                   )}
                 </div>
-                <span className="font-bold text-gray-700">{cat}</span>
+                <span className="font-bold text-gray-700 text-center text-sm">{cat.name}</span>
+              </div>
+            )) : ['Pizza', 'Sushi', 'Burgers', 'Desserts', 'Beverages', 'Healthy'].map((cat, i) => (
+              <div key={i} className="bg-white p-4 rounded-2xl flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-sm">
+                <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center hover:bg-blue-50 transition text-gray-300">
+                   <div className="animate-pulse w-6 h-6 bg-gray-200 rounded-full"></div>
+                </div>
+                <div className="animate-pulse h-4 bg-gray-200 rounded w-16"></div>
               </div>
             ))}
           </div>
@@ -97,74 +158,34 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 mt-6">
-            {/* Card 1 */}
-            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition group">
-              <div className="relative h-56 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop" alt="Pizza" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
-                  <span className="text-yellow-500">★</span> 4.8
+            {popularProducts.map((product) => (
+              <div 
+                key={product.id} 
+                onClick={() => navigate(`/product/${product.id}`)}
+                className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition group cursor-pointer"
+              >
+                <div className="relative h-56 overflow-hidden bg-gray-100">
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
+                    <span className="text-yellow-500">★</span> {product.rating}
+                  </div>
+                  <div className="absolute bottom-4 left-4 bg-purple-500 text-white px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                    {product.category}
+                  </div>
                 </div>
-                <div className="absolute bottom-4 left-4 bg-[#0052cc] text-white px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                  Partner
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-lg font-extrabold text-gray-900">The Dough Atelier</h4>
-                  <span className="font-bold text-[#0052cc]">$20-40</span>
-                </div>
-                <p className="text-sm text-gray-500 font-medium mb-4">Italian • Pizza • High-end</p>
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-600">
-                  <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 15-25 min</div>
-                  <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> $0.99 Fee</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition group">
-              <div className="relative h-56 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=600&auto=format&fit=crop" alt="Sushi" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
-                  <span className="text-yellow-500">★</span> 4.9
-                </div>
-                <div className="absolute bottom-4 left-4 bg-purple-500 text-white px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                  Popular
+                <div className="p-5 flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-1 gap-2">
+                    <h4 className="text-lg font-extrabold text-gray-900 line-clamp-1">{product.name}</h4>
+                    <span className="font-bold text-[#0052cc] whitespace-nowrap">{product.price.toLocaleString('vi-VN')}đ</span>
+                  </div>
+                  <p className="text-sm text-gray-500 font-medium mb-4 line-clamp-1">{product.description}</p>
+                  <div className="flex items-center gap-4 text-xs font-bold text-gray-600 mt-auto">
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 20-30 min</div>
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Free Ship</div>
+                  </div>
                 </div>
               </div>
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-lg font-extrabold text-gray-900">Umi No Kaze</h4>
-                  <span className="font-bold text-[#0052cc]">$45-80</span>
-                </div>
-                <p className="text-sm text-gray-500 font-medium mb-4">Japanese • Sushi • Sea Food</p>
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-600">
-                  <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 30-45 min</div>
-                  <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> $2.50 Fee</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition group">
-              <div className="relative h-56 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop" alt="Burger" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
-                  <span className="text-yellow-500">★</span> 4.6
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-lg font-extrabold text-gray-900">Prime Stack Burger</h4>
-                  <span className="font-bold text-[#0052cc]">$15-30</span>
-                </div>
-                <p className="text-sm text-gray-500 font-medium mb-4">American • Burgers • Grill</p>
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-600">
-                  <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 20-30 min</div>
-                  <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1.5 rounded-md"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> $1.50 Fee</div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
