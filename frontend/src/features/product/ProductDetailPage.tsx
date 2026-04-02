@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import api from '../../services/api';
 
 interface Size {
   name: string;
@@ -51,14 +52,13 @@ const ProductDetailPage = () => {
     const fetchProductDetails = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:3000/products/${id}`);
-        if (!res.ok) throw new Error('Product not found');
-        const data = await res.json();
+        const res = await api.get(`/public/products/${id}`);
+        const data = res.data;
         setProduct(data);
 
         // Fetch related products (e.g. from the same category or random)
-        const pairRes = await fetch(`http://localhost:3000/products?category=${encodeURIComponent(data.category)}`);
-        const pairData = await pairRes.json();
+        const pairRes = await api.get(`/public/products?category=${encodeURIComponent(data.category)}`);
+        const pairData = pairRes.data;
         // Exclude current product and take 4
         setPairings(pairData.filter((p: Product) => p.id !== data.id).slice(0, 4));
 

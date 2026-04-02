@@ -20,8 +20,6 @@ import NotificationsPage from './features/notifications/NotificationsPage';
 import ReviewManagementPage from './features/merchant/ReviewManagementPage';
 import StoreSettingsPage from './features/merchant/StoreSettingsPage';
 import NotFoundPage from './features/error/NotFoundPage';
-// Note: CartDrawer and EmptyCart are typically nested components or modals, 
-// but can be routed if needed. For now we will add a route for EmptyCart for testing.
 import EmptyCart from './features/cart/EmptyCart';
 
 // Customer & Checkout
@@ -57,86 +55,32 @@ import DisputeCenterPage from './features/admin/DisputeCenterPage';
 import CommissionSettingsPage from './features/admin/CommissionSettingsPage';
 
 const router = createBrowserRouter([
+  // ==========================================
+  // PUBLIC ROUTES (Ai cũng vào được)
+  // ==========================================
+  { path: '/login', element: <Login /> },
+  { path: '/register', element: <Register /> },
+  { path: '/forgot-password', element: <ForgotPassword /> },
+  { path: '/', element: <Home /> },
+  { path: '/category/:categoryId', element: <CategoryPage /> },
+  { path: '/product/:id', element: <ProductDetailPage /> },
+  { path: '/partner', element: <PartnerPage /> },
+  { path: '/privacy', element: <PrivacyPolicyPage /> },
+  { path: '/support', element: <SupportPage /> },
+  { path: '/about', element: <AboutPage /> },
+  { path: '/offers', element: <OffersPage /> },
+  { path: '/restaurant/:id', element: <RestaurantProfilePage /> },
+  { path: '/search', element: <SearchResultsPage /> },
+  { path: '/cart-empty-test', element: <EmptyCart /> },
+
+  // ==========================================
+  // CUSTOMER ROUTES (Yêu cầu đăng nhập, thường là ROLE "CUSTOMER")
+  // ==========================================
   {
-    path: '/login',
-    element: <Login />,
-  },
-  {
-    path: '/register',
-    element: <Register />,
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPassword />,
-  },
-  {
-    // @ts-expect-error: allowedRoles is optional but TS expects it
-    element: <ProtectedRoute />, 
+    // Cấp quyền cho CUSTOMER (hoặc ai đã login tùy ý thiết kế, ở đây ta phân quyền cụ thể CUSTOMER)
+    // Nếu bạn muốn ai cũng mua được hàng thì bỏ allowedRoles, chỉ cần check login
+    element: <ProtectedRoute allowedRoles={['CUSTOMER']} />,
     children: [
-      {
-        path: '/',
-        element: <Home />,
-      },
-      {
-        path: '/category/:categoryId',
-        element: <CategoryPage />,
-      },
-      {
-        path: '/product/:id',
-        element: <ProductDetailPage />,
-      },
-      {
-        path: '/partner',
-        element: <PartnerPage />,
-      },
-      {
-        path: '/privacy',
-        element: <PrivacyPolicyPage />,
-      },
-      {
-        path: '/support',
-        element: <SupportPage />,
-      },
-      {
-        path: '/about',
-        element: <AboutPage />,
-      },
-      {
-        path: '/offers',
-        element: <OffersPage />,
-      },
-      
-      // Mới thêm
-      {
-        path: '/restaurant/:id',
-        element: <RestaurantProfilePage />
-      },
-      {
-        path: '/search',
-        element: <SearchResultsPage />
-      },
-      {
-        path: '/tracking/:orderId',
-        element: <LiveTrackingPage />
-      },
-      {
-        path: '/notifications',
-        element: <NotificationsPage />
-      },
-      {
-        path: '/merchant/reviews',
-        element: <ReviewManagementPage />
-      },
-      {
-        path: '/merchant/settings',
-        element: <StoreSettingsPage />
-      },
-      {
-        path: '/cart-empty-test',
-        element: <EmptyCart />
-      },
-      
-      // Customer & Checkout
       { path: '/customer/orders', element: <OrderHistoryPage /> },
       { path: '/customer/profile', element: <UserProfilePage /> },
       { path: '/customer/settings', element: <AccountSettingsPage /> },
@@ -144,22 +88,47 @@ const router = createBrowserRouter([
       { path: '/checkout', element: <CheckoutPage /> },
       { path: '/checkout/payment', element: <PaymentMethodsPage /> },
       { path: '/checkout/success', element: <OrderConfirmationPage /> },
-      
-      // Merchant
+      { path: '/tracking/:orderId', element: <LiveTrackingPage /> },
+      { path: '/notifications', element: <NotificationsPage /> },
+    ]
+  },
+
+  // ==========================================
+  // MERCHANT ROUTES (Chỉ Chủ nhà hàng / Quán ăn)
+  // ==========================================
+  {
+    element: <ProtectedRoute allowedRoles={['MERCHANT']} />,
+    children: [
       { path: '/merchant/dashboard', element: <MerchantDashboardPage /> },
       { path: '/merchant/menu', element: <MenuManagementPage /> },
       { path: '/merchant/orders', element: <OrderListPage /> },
+      { path: '/merchant/reviews', element: <ReviewManagementPage /> },
       { path: '/merchant/reports', element: <MonthlyReportsPage /> },
       { path: '/merchant/inventory', element: <InventoryControlPage /> },
-      
-      // Driver
+      { path: '/merchant/settings', element: <StoreSettingsPage /> },
+    ]
+  },
+
+  // ==========================================
+  // DRIVER ROUTES (Chỉ Tài xế)
+  // ==========================================
+  {
+    element: <ProtectedRoute allowedRoles={['DRIVER']} />,
+    children: [
       { path: '/driver/dashboard', element: <DriverDashboardPage /> },
       { path: '/driver/active', element: <ActiveDeliveryPage /> },
       { path: '/driver/wallet', element: <DriverWalletPage /> },
       { path: '/driver/heatmap', element: <DriverHeatmapPage /> },
       { path: '/driver/kyc', element: <DriverKYCPage /> },
-      
-      // Admin
+    ]
+  },
+
+  // ==========================================
+  // ADMIN ROUTES (Quản trị viên)
+  // ==========================================
+  {
+    element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+    children: [
       { path: '/admin/dashboard', element: <AdminDashboardPage /> },
       { path: '/admin/shippers', element: <ShipperManagementPage /> },
       { path: '/admin/live-orders', element: <LiveOrderManagementPage /> },
@@ -167,13 +136,11 @@ const router = createBrowserRouter([
       { path: '/admin/payments', element: <PaymentManagementPage /> },
       { path: '/admin/disputes', element: <DisputeCenterPage /> },
       { path: '/admin/settings', element: <CommissionSettingsPage /> },
-    ],
+    ]
   },
+
   // Catch all 404
-  {
-    path: '*',
-    element: <NotFoundPage />
-  }
+  { path: '*', element: <NotFoundPage /> }
 ]);
 
 const RouterSetup = () => {

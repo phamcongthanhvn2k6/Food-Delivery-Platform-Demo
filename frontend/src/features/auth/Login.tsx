@@ -19,10 +19,18 @@ export default function Login() {
     setError('');
     try {
       const res = await api.post('/auth/login', { email, password });
-      dispatch(loginSuccess({ user: res.data.user, token: res.data.token }));
-      navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      
+      const { user, token } = res.data;
+      dispatch(loginSuccess({ user, token }));
+      
+      // Chuyển hướng dựa theo Role
+      if (user.role === 'ADMIN') navigate('/admin/dashboard');
+      else if (user.role === 'MERCHANT') navigate('/merchant/dashboard');
+      else if (user.role === 'DRIVER') navigate('/driver/dashboard');
+      else navigate('/'); // CUSTOMER
+      
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     }
   };
 
