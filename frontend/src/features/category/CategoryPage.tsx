@@ -27,16 +27,17 @@ const CategoryPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Assuming your backend is json-server on port 3000
-        const res = await fetch(`http://localhost:3000/products?category=${encodeURIComponent(categoryName)}`);
+        // Update to point to your actual backend port 5000
+        const res = await fetch(`http://localhost:5000/api/public/products?category=${encodeURIComponent(categoryName)}`);
         const data = await res.json();
         setProducts(data);
 
-        // Fetch category info
-        const catRes = await fetch(`http://localhost:3000/categories?id=${encodeURIComponent(categoryName)}`);
+        // Fetch category info (using the main categories endpoint)
+        const catRes = await fetch(`http://localhost:5000/api/public/categories`);
         const catData = await catRes.json();
-        if (catData && catData.length > 0) {
-          setCategoryInfo(catData[0]);
+        const info = catData.find((c: any) => c.name === categoryName);
+        if (info) {
+          setCategoryInfo(info);
         }
       } catch (error) {
         console.error("Failed to fetch products", error);

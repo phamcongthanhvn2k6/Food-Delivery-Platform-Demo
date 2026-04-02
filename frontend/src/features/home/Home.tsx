@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import api from '../../services/api';
+
+const getCategoryIcon = (name: string) => {
+  const norm = name.toLowerCase();
+  if (norm.includes('phở') || norm.includes('bún')) return '🍜';
+  if (norm.includes('pizza')) return '🍕';
+  if (norm.includes('trà') || norm.includes('nước')) return '🥤';
+  if (norm.includes('chính')) return '🍲';
+  if (norm.includes('kèm')) return '🥟';
+  if (norm.includes('chay')) return '🥗';
+  if (norm.includes('burger')) return '🍔';
+  return '🍽️';
+};
 
 interface Category {
   id: string;
@@ -27,21 +40,14 @@ export default function Home() {
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   
   useEffect(() => {
-    // Fetch categories
-    fetch('http://localhost:3000/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data.slice(0, 12))) // display up to 12 categories
-      .catch(err => console.error(err));
+    // Kéo dữ liệu từ SQL qua Cổng Public
+    api.get('/public/categories')
+      .then(res => setCategories(res.data.slice(0, 12))) 
+      .catch(err => console.error("Lỗi lấy danh mục:", err));
 
-    // Fetch popular products (we will just take top rated or random ones)
-    fetch('http://localhost:3000/products')
-      .then(res => res.json())
-      .then((data: Product[]) => {
-        // Sort by rating or shuffle, here we sort by rating and take top 6
-        const sorted = data.sort((a, b) => b.rating - a.rating);
-        setPopularProducts(sorted.slice(0, 6));
-      })
-      .catch(err => console.error(err));
+    api.get('/public/featured-items')
+      .then(res => setPopularProducts(res.data))
+      .catch(err => console.error("Lỗi lấy sản phẩm HOT:", err));
   }, []);
 
 
@@ -105,12 +111,8 @@ export default function Home() {
                 <div className="w-14 h-14 bg-gray-50 rounded-full overflow-hidden flex items-center justify-center group-hover:bg-blue-50 transition text-[#0052cc]">
                    {cat.imageUrl ? (
                      <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
-                   ) : cat.icon ? (
-                     <i className={`${cat.icon} text-xl`}></i>
-                   ) : cat.type === 'food' ? (
-                     <span className="text-2xl">🍽️</span>
                    ) : (
-                     <span className="text-2xl">🥤</span>
+                     <span className="text-3xl">{getCategoryIcon(cat.name)}</span>
                    )}
                 </div>
                 <span className="font-bold text-gray-700 text-center text-sm">{cat.name}</span>
