@@ -4,16 +4,21 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"npm run server\"",
+    "dev": "concurrently \"vite\" \"npm run server\" \"npm run db\"",
+    "db": "json-server db.json --port 3000",
     "server": "node backend/server.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.6",
+    "cloudinary": "^1.41.3",
     "json-server": "^1.0.0-beta.14",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-redux": "^9.2.0",
@@ -32,6 +37,7 @@
     "globals": "^17.4.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.19",
+    "typescript-eslint": "^8.57.1",
     "vite": "^8.0.1"
   }
 }

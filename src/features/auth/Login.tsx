@@ -4,6 +4,9 @@ import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/authSlice';
 import api from '../../services/api';
 
+
+import srcAnhGa from '../../assets/Galogin.png';
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     try {
@@ -46,8 +49,8 @@ export default function Login() {
           </div>
           
           {/* Decorative image placeholder (would use real URL) */}
-          <div className="w-4/5 h-48 bg-gray-800 rounded-2xl shadow-2xl mt-auto ml-auto -mr-8 -mb-4 overflow-hidden relative">
-            <img src="https://images.unsplash.com/photo-1544025162-811114215b29?q=80&w=600&auto=format&fit=crop" alt="Food" className="w-full h-full object-cover opacity-80 mix-blend-overlay hover:scale-105 transition-transform duration-700" />
+          <div className="w-4/5 h-48 rounded-2xl shadow-2xl mt-auto ml-auto -mr-8 -mb-4 overflow-hidden relative border-[6px] border-white">
+            <img src={srcAnhGa} alt="anhga" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
           </div>
         </div>
 
