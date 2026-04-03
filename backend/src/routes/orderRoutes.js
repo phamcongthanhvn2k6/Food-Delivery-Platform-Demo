@@ -9,4 +9,7 @@ router.get('/my-orders', authMiddleware, orderController.getMyOrders);
 // Route lấy chi tiết đơn hàng (Yêu cầu đăng nhập)
 router.get('/:id', authMiddleware, orderController.getOrderDetails);
 
+// Route tạo đơn hàng mới (Yêu cầu đăng nhập)
+router.post('/', authMiddleware, orderController.createOrder);
+
 module.exports = router;

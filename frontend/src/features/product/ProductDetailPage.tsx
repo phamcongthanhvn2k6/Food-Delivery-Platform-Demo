@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import api from '../../services/api';
+import { addItem } from '../../store/cartSlice';
 
 interface Size {
   name: string;
@@ -43,7 +44,6 @@ const ProductDetailPage = () => {
   const [selectedToppings, setSelectedToppings] = useState<number[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Related products
   const [pairings, setPairings] = useState<Product[]>([]);
@@ -99,7 +99,9 @@ const ProductDetailPage = () => {
 
   const currentTotal = calculateTotal();
 
-  const handleAddToCart = async () => {
+  const dispatch = useDispatch();
+
+  const handleAddToCart = () => {
     if (!user) {
       alert("Vui lòng đăng nhập để thêm vào giỏ hàng");
       navigate('/login');
@@ -108,44 +110,47 @@ const ProductDetailPage = () => {
     
     if (!product) return;
 
-    setIsAddingToCart(true);
-
-    try {
-      const cartItem = {
-        userId: user.id,
-        productId: product.id,
-        name: product.name,
-        imageUrl: product.imageUrl,
-        basePrice: product.price,
-        quantity: quantity,
-        totalPrice: currentTotal,
-        options: {
-          size: product.sizes && product.sizes.length > 0 ? product.sizes[selectedSize].name : null,
-          extraToppings: selectedToppings.map(idx => product.extraToppings![idx].name),
-          specialInstructions: specialInstructions
-        },
-        addedAt: new Date().toISOString()
-      };
-
-      const res = await fetch('http://localhost:3000/cartItems', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(cartItem)
-      });
-
-      if (res.ok) {
-        alert("Thêm vào giỏ hàng thành công!");
-      } else {
-        alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      imageUrl: product.imageUrl,
+      price: currentTotal / quantity,
+      quantity: quantity,
+      options: {
+        size: product.sizes && product.sizes.length > 0 ? product.sizes[selectedSize].name : null,
+        extraToppings: selectedToppings.map(idx => product.extraToppings![idx].name),
+        specialInstructions: specialInstructions
       }
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi kết nối máy chủ");
-    } finally {
-      setIsAddingToCart(false);
+    };
+
+    dispatch(addItem(cartItem));
+    alert("Đã thêm món ăn vào giỏ hàng! 🍕");
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập để mua hàng");
+      navigate('/login');
+      return;
     }
+    
+    if (!product) return;
+
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      imageUrl: product.imageUrl,
+      price: currentTotal / quantity,
+      quantity: quantity,
+      options: {
+        size: product.sizes && product.sizes.length > 0 ? product.sizes[selectedSize].name : null,
+        extraToppings: selectedToppings.map(idx => product.extraToppings![idx].name),
+        specialInstructions: specialInstructions
+      }
+    };
+
+    dispatch(addItem(cartItem));
+    navigate('/checkout');
   };
 
   if (loading) {
@@ -326,16 +331,18 @@ const ProductDetailPage = () => {
 
              {/* Buttons */}
              <div className="flex gap-4 w-full md:w-auto">
-                <button 
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className="flex-1 md:flex-none bg-white border-2 border-[#0052cc] text-[#0052cc] px-8 py-3.5 rounded-full font-bold hover:bg-blue-50 transition"
-                >
-                  {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-                </button>
-                <button className="flex-1 md:flex-none bg-[#0052cc] text-white px-8 py-3.5 rounded-full font-bold shadow-lg hover:bg-blue-700 hover:-translate-y-0.5 transition transform">
-                  Buy Now
-                </button>
+                 <button 
+                   onClick={handleAddToCart}
+                   className="flex-1 md:flex-none bg-white border-2 border-[#0052cc] text-[#0052cc] px-8 py-3.5 rounded-full font-bold hover:bg-blue-50 transition"
+                 >
+                   Add to Cart
+                 </button>
+                 <button 
+                   onClick={handleBuyNow}
+                   className="flex-1 md:flex-none bg-[#0052cc] text-white px-8 py-3.5 rounded-full font-bold shadow-lg hover:bg-blue-700 hover:-translate-y-0.5 transition transform"
+                 >
+                   Buy Now
+                 </button>
              </div>
           </div>
         </div>
