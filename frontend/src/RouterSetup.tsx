@@ -1,4 +1,5 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Login from './features/auth/Login';
 import Register from './features/auth/Register';
 import ForgotPassword from './features/auth/ForgotPassword';
@@ -139,9 +140,19 @@ const router = createBrowserRouter([
     ]
   },
 
+  { path: '/orders', element: <OrdersRedirect /> },
   // Catch all 404
   { path: '*', element: <NotFoundPage /> }
 ]);
+
+function OrdersRedirect() {
+  const { user } = useSelector((state: any) => state.auth);
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'MERCHANT') return <Navigate to="/merchant/orders" replace />;
+  if (user.role === 'DRIVER') return <Navigate to="/driver/dashboard" replace />;
+  if (user.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+  return <Navigate to="/customer/orders" replace />;
+}
 
 const RouterSetup = () => {
   return <RouterProvider router={router} />;
