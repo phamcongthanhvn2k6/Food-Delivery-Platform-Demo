@@ -1,9 +1,12 @@
 import React from "react";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 
 const NotificationsPage = () => {
   return (
-    <div className="bg-background min-h-screen py-12 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="flex flex-col min-h-screen bg-background">
+      <Header />
+      <main className="flex-1 py-12 px-4 max-w-3xl w-full mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="font-display font-bold text-3xl">
             Trung tâm Thông báo
@@ -38,7 +41,8 @@ const NotificationsPage = () => {
             <div className="w-3 h-3 bg-[#fb5151] rounded-full mt-2"></div>
           </div>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };
