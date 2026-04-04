@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import { supabase } from '../../services/supabaseClient';
 
 interface Product {
   id: string;
@@ -27,20 +28,56 @@ const CategoryPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Update to point to your actual backend port 5000
-        const res = await fetch(`http://localhost:5000/api/public/products?category=${encodeURIComponent(categoryName)}`);
-        const data = await res.json();
-        setProducts(data);
+        
+        // 1. Fetch menu items where the parent restaurant category matches
+        const { data: itemData, error: itemError } = await supabase
+          .from('menuitems')
+          .select(`
+            id:itemid,
+            name:itemname,
+            description,
+            price,
+            imageurl,
+            restaurants!inner (
+              brandname,
+              rating,
+              category
+            )
+          `)
+          .eq('restaurants.category', categoryName);
 
-        // Fetch category info (using the main categories endpoint)
-        const catRes = await fetch(`http://localhost:5000/api/public/categories`);
-        const catData = await catRes.json();
-        const info = catData.find((c: any) => c.name === categoryName);
-        if (info) {
-          setCategoryInfo(info);
+
+        if (itemError) throw itemError;
+
+        const formattedProducts: Product[] = (itemData || []).map((item: any) => ({
+          id: `${item.id}`,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          category: item.restaurants?.category || categoryName,
+          imageUrl: item.imageurl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+          rating: item.restaurants?.rating || 4.5
+        }));
+
+
+        setProducts(formattedProducts);
+
+        // 2. Fetch category info (using the first restaurant with this category as a sample)
+        const { data: restData } = await supabase
+          .from('restaurants')
+          .select('category')
+          .eq('category', categoryName)
+          .limit(1);
+
+
+        if (restData && restData.length > 0) {
+          setCategoryInfo({
+            name: categoryName,
+            imageUrl: formattedProducts.length > 0 ? formattedProducts[0].imageUrl : null
+          });
         }
       } catch (error) {
-        console.error("Failed to fetch products", error);
+        console.error("Failed to fetch products from Supabase", error);
       } finally {
         setLoading(false);
       }
@@ -50,6 +87,7 @@ const CategoryPage = () => {
       fetchProducts();
     }
   }, [categoryName]);
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">

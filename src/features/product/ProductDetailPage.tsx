@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import api from '../../services/api';
+import { supabase } from '../../services/supabaseClient';
 import { addItem } from '../../store/cartSlice';
+
 
 interface Size {
   name: string;
@@ -52,24 +53,89 @@ const ProductDetailPage = () => {
     const fetchProductDetails = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/public/products/${id}`);
-        const data = res.data;
-        setProduct(data);
+        
+        // 1. Fetch single product by ID
+        const { data: item, error } = await supabase
+          .from('menuitems')
+          .select(`
+            itemid,
+            itemname,
+            description,
+            price,
+            imageurl,
+            isavailable,
+            categoryid
+          `)
+          .eq('itemid', id)
+          .single();
 
-        // Fetch related products (e.g. from the same category or random)
-        const pairRes = await api.get(`/public/products?category=${encodeURIComponent(data.category)}`);
-        const pairData = pairRes.data;
-        // Exclude current product and take 4
-        setPairings(pairData.filter((p: Product) => p.id !== data.id).slice(0, 4));
+
+        if (error) throw error;
+
+        // Fetch category name for the breadcrumb/pairing
+        const { data: catData } = await supabase
+          .from('menucategories')
+          .select('name')
+          .eq('categoryid', item.categoryid)
+          .single();
+
+
+        const formattedProduct: Product = {
+          id: `${item.itemid}`,
+          name: item.itemname,
+          description: item.description,
+          price: item.price,
+          category: catData?.name || 'General',
+          imageUrl: item.imageurl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+          rating: 4.8, // Default rating as we don't have item-specific ratings yet
+          sizes: [],
+          extraToppings: [],
+          tags: ["Special"],
+          preparationTime: "20-30 min"
+        };
+
+
+        setProduct(formattedProduct);
+
+        // 2. Fetch related products from the same category
+        const { data: pairingData } = await supabase
+          .from('menuitems')
+          .select(`
+            id:itemid,
+            name:itemname,
+            description,
+            price,
+            imageurl,
+            categoryid
+          `)
+          .eq('categoryid', item.categoryid)
+          .neq('itemid', id)
+          .limit(4);
+
+
+        if (pairingData) {
+          const formattedPairings: Product[] = pairingData.map((p: any) => ({
+            id: `${p.id}`,
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            category: catData?.name || 'General',
+            imageUrl: p.imageurl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+            rating: 4.5
+          }));
+          setPairings(formattedPairings);
+        }
+
 
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching product from Supabase:", err);
       } finally {
         setLoading(false);
       }
     };
     if (id) fetchProductDetails();
   }, [id]);
+
 
   const handleToppingToggle = (index: number) => {
     setSelectedToppings(prev => 

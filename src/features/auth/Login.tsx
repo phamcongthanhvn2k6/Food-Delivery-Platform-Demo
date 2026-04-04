@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/authSlice';
-import api from '../../services/api';
+import { supabase } from '../../services/supabaseClient';
+
 
 
 import srcAnhGa from '../../assets/Galogin.png';
@@ -18,21 +19,52 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
-      const res = await api.post('/auth/login', { email, password });
+      // 1. Sign in with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      const { user, token } = res.data;
-      dispatch(loginSuccess({ user, token }));
+      if (authError) throw authError;
+
+      const session = authData.session;
+      const authUser = authData.user;
+
+      if (!session) throw new Error("No session created");
+
+      // 2. Fetch additional profile info from public.users (role, fullname)
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
       
-      // Chuyển hướng dựa theo Role
-      if (user.role === 'ADMIN') navigate('/admin/dashboard');
-      else if (user.role === 'MERCHANT') navigate('/merchant/dashboard');
-      else if (user.role === 'DRIVER') navigate('/driver/dashboard');
+      // If no profile found in public.users, we use a default role
+      const userPayload = {
+        id: authUser.id,
+        email: authUser.email,
+        fullName: profile?.fullname || authUser.user_metadata?.full_name || 'User',
+        role: profile?.role || 'CUSTOMER',
+        avatarUrl: profile?.avatarurl || authUser.user_metadata?.avatar_url
+      };
+
+
+      dispatch(loginSuccess({ 
+        user: userPayload, 
+        token: session.access_token 
+      }));
+      
+      // Navigate based on Role
+      if (userPayload.role === 'ADMIN') navigate('/admin/dashboard');
+      else if (userPayload.role === 'MERCHANT') navigate('/merchant/dashboard');
+      else if (userPayload.role === 'DRIVER') navigate('/driver/dashboard');
       else navigate('/'); // CUSTOMER
       
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Login failed. Please check your credentials.');
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

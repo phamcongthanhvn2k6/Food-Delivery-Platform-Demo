@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { supabase } from '../../services/supabaseClient';
+
 
 export default function Register() {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '', role: 'user' });
@@ -15,12 +16,49 @@ export default function Register() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/auth/register', formData);
+      // 1. Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            role: formData.role
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      // 2. Map UI role to Database Role
+      const roleMap = {
+        'user': 'CUSTOMER',
+        'admin': 'ADMIN',
+        'shipper': 'DRIVER',
+        'restaurant_owner': 'MERCHANT'
+      };
+      const dbRole = roleMap[formData.role] || 'CUSTOMER';
+
+      // 3. Create entry in public.users table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([{
+          fullname: formData.fullName,
+          email: formData.email,
+          role: dbRole,
+          status: 'ACTIVE'
+        }]);
+
+
+      if (profileError) throw profileError;
+
+      alert("Registration successful! Please check your email or log in.");
       navigate('/login');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

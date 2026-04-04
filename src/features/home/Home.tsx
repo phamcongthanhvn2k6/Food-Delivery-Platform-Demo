@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import api from '../../services/api';
+import { supabase } from '../../services/supabaseClient';
 
 const getCategoryIcon = (name: string) => {
   const norm = name.toLowerCase();
@@ -38,17 +38,67 @@ export default function Home() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Kéo dữ liệu từ SQL qua Cổng Public
-    api.get('/public/categories')
-      .then(res => setCategories(res.data.slice(0, 12))) 
-      .catch(err => console.error("Lỗi lấy danh mục:", err));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // 1. Fetch unique categories safely from the restaurants table
+        const { data: catData, error: catError } = await supabase
+          .from('restaurants')
+          .select('category')
+        
+        if (catError) throw catError;
+        
+        // Get unique category strings for the menu
+        const uniqueCats = Array.from(new Set(catData.map(r => r.category)))
+          .map((name, index) => ({ id: `${index}`, name, type: name }));
+        
+        setCategories(uniqueCats.slice(0, 12));
 
-    api.get('/public/featured-items')
-      .then(res => setPopularProducts(res.data))
-      .catch(err => console.error("Lỗi lấy sản phẩm HOT:", err));
+        // 2. Fetch featured items joined with restaurant info
+        const { data: itemData, error: itemError } = await supabase
+          .from('menuitems')
+          .select(`
+            id:itemid,
+            name:itemname,
+            description,
+            price,
+            imageurl,
+            restaurants (
+              brandname,
+              rating,
+              category
+            )
+          `)
+          .limit(6);
+          
+        if (itemError) throw itemError;
+
+        // Shape data to match the UI component's Product interface
+        const formattedProducts: Product[] = itemData.map((item: any) => ({
+          id: `${item.id}`,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          category: item.restaurants?.category || 'General',
+          imageUrl: item.imageurl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+          rating: item.restaurants?.rating || 4.5
+        }));
+
+        setPopularProducts(formattedProducts);
+        
+      } catch (err) {
+        console.error("Error fetching data from Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
 
 
   return (
